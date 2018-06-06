@@ -29,6 +29,6 @@ RUN useradd -u800 mongod \
 && chown -R mongod.mongod /usr/local/mongo \
 && chown mongod.mongod /usr/bin/mongod /usr/bin/mongos \
 && chmod a+x /init.sh /init_slave.sh
-EXPOSE 27017
+EXPOSE 27107
 USER mongod
 ENTRYPOINT ["usr/bin/mongod","-f","/usr/local/mongo/conf/mongo.conf"]

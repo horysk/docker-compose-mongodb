@@ -5,6 +5,7 @@ shopt -s nullglob
 
 declare i=1
 declare -a con_ip
+declare -a con_id
 declare con_ips=""
 
 # 将接收到的参数使用ANSI颜色打印到控制台
@@ -17,14 +18,15 @@ aprint "Docker Compose starting..."
 
 #配置configsrv
 for c_id in $(docker-compose ps | sed -n '3,$p' | grep configsrv | sed -n '/Up/p' | awk '{print $1}'); do
+    con_id+=( "$c_id" )
     con_ips=`docker container inspect "$c_id" | grep -o -E '\"IPAddress": ".+"' | sed "s/\"//g" | sed "s/\://g" | awk '{print $2}'`
     con_ip+=( "$con_ips" ) 
     if [[ "$c_id" =~ configsrv_.* ]]; then
         echo "configuring $c_name $c_id ..."
         if [[ "$i" -eq 1 ]]; then
-        	docker exec "$c_id" /init.sh ${con_ip[0]}
+        	docker exec "${con_id[0]}" /init.sh ${con_ip[0]}
 	else
-		docker exec "$c_id" /init_slave.sh ${con_ip[0]} ${con_ip[i]}
+		docker exec "${con_id[0]}" /init_slave.sh ${con_ip[0]} $con_ips
 	fi
 	let i=i+1
     fi
