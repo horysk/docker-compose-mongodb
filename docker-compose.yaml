@@ -1,0 +1,31 @@
+version: "3"
+services:
+  mongodb:
+    build: ./mongodb
+    image: robin/mongod:master
+#    deploy:
+#      replicas: 3
+    volumes:
+      - "./mongodb/conf.d:/usr/local/mongo/conf"
+    environment:
+      - mongorole=shardsvr
+  configsrv: 
+    build: ./configsrv
+    image: robin/mongoconfigsrv:master
+#    deploy:
+#      replicas: 3
+    volumes:
+      - "./mongodb/conf.d:/usr/local/mongo/conf"
+    environment:
+      - mongorole=configsrv
+  mongoos:
+    build: ./mongoos
+    image: robin/mongos:master
+#    deploy:
+#      replicas: 1
+    volumes:
+      - "./mongodb/conf.d:/usr/local/mongo/conf"
+    environment:
+       - mongorole=mongoos
+    
+

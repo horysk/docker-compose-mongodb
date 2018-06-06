@@ -1,0 +1,3 @@
+FROM  robin/mongod:master
+EXPOSE 27017
+ENTRYPOINT ["/usr/bin/mongod","--dbpath=/usr/local/mongo/data"]
