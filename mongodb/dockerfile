@@ -21,14 +21,15 @@ RUN mkdir -p /usr/local/mongo/conf \
 # Copy conf
 ADD ./conf.d/mongo.conf /usr/local/mongo/conf/mongo.conf
 ADD ./prepairation/init.sh /init.sh
+ADD ./prepairation/init_slave.sh /init_salve.sh
 
 # Crteate the MongoDB user
 RUN useradd -u800 mongod \
 && echo mongod:123456 | chpasswd \
 && chown -R mongod.mongod /usr/local/mongo \
 && chown mongod.mongod /usr/bin/mongod /usr/bin/mongos \
-&& chmod a+x /init.sh
-EXPOSE 27017
+&& chmod a+x /init.sh /init_slave.sh
+EXPOSE 27107
 USER mongod
 
 ENTRYPOINT ["usr/bin/mongod","-f","/usr/local/mongo/conf/mongo.conf"]
