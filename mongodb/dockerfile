@@ -21,7 +21,7 @@ RUN mkdir -p /usr/local/mongo/conf \
 # Copy conf
 ADD ./conf.d/mongo.conf /usr/local/mongo/conf/mongo.conf
 ADD ./prepairation/init.sh /init.sh
-ADD ./prepairation/init_slave.sh /init_salve.sh
+ADD ./prepairation/init_slave.sh /init_slave.sh
 
 # Crteate the MongoDB user
 RUN useradd -u800 mongod \
