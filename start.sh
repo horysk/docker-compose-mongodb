@@ -10,7 +10,7 @@ declare -a cfgcon_ip
 declare -a cfgcon_id
 declare -a oscon_ip
 declare -a oscon_id
-declare -a str
+declare  cfgstr=""
 declare con_ips=""
 
 # 将接收到的参数使用ANSI颜色打印到控制台
@@ -34,7 +34,7 @@ for c_id in $(docker-compose ps | sed -n '3,$p' | grep configsrv | sed -n '/Up/p
 	fi
 	let i=i+1
     fi
-    sleep 10
+    sleep 2
  done
 
 
@@ -53,24 +53,41 @@ for c_id in $(docker-compose ps | sed -n '3,$p' | grep shdmongodb | sed -n '/Up/
         fi
         let i=i+1
     fi
-    sleep 5
+    sleep 2
  done
 
 #配置mongoos
-i=1
-for c_id in $(docker-compose ps | sed -n '3,$p' | grep mongoos | sed -n '/Up/p' | awk '{print $1}'); do
-	let i=i+1
-done
+echo "configuring mongoos..."
 docker-compose stop mongoos
-echo "configuring $c_id ..."
-for ip in ${cfgcon_ip[@]} ; do
-	str+=( "$ip:27107" )
 
-        sed -i "/s/configsrv/${str[@]}/g" ./mongoos/conf.d/mongo.conf
+for ip in ${cfgcon_ip[@]} ; do
+	cfgstr+="$ip:27107,"
 done
+cfgstr=`echo $cfgstr |sed 's/.$//'`
+echo $cfgstr
+sed -i "/^  configDB/d" ./mongoos/conf.d/mongo.conf
+echo "  configDB: config/$cfgstr" >>./mongoos/conf.d/mongo.conf
+#sed -i "s#^  configDB#  configDB: config/$cfgstr#" ./mongoos/conf.d/mongo.conf
 docker-compose start mongoos 
  
 sleep 2
 
+#配置分片
+cfgstr=""
+for ip in ${shdcon_ip[@]} ; do
+        cfgstr+="$ip:27107,"
+done
+cfgstr=`echo $cfgstr |sed 's/.$//'`
+
+for c_id in $(docker-compose ps | sed -n '3,$p' | grep mongoos | sed -n '/Up/p' | awk '{print $1}'); do
+    oscon_id+=( "$c_id" )
+    con_ips=`docker container inspect "$c_id" | grep -o -E '\"IPAddress": ".+"' | sed "s/\"//g" | sed "s/\://g" | awk '{print $2}'`
+    oscon_ip+=( "$con_ips" )
+    if [[ "$c_id" =~ mongoos_.* ]]; then
+        echo "configuring $c_id ..."
+        docker exec "${oscon_id[0]}" /init.sh $cfgstr
+    fi
+    sleep 2
+ done
 
 aprint "Done!"
