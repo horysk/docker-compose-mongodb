@@ -1,12 +1,7 @@
 #!/bin/bash
-mongo --port 27001 --host $1 admin<<EOF
+mongo --port 27107 --host $1 admin<<EOF
 rs.initiate();
-rs.add("$2:27017");
-rs.status();
-Fix hostname of primary.
-cfg = rs.conf();
-cfg.members[0].host = "$1:27017";
-rs.reconfig(cfg);
+rs.add("$1:27107");
 rs.status();
 exit;
 EOF

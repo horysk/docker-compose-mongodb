@@ -4,8 +4,13 @@ set -eo pipefail
 shopt -s nullglob
 
 declare i=1
-declare -a con_ip
-declare -a con_id
+declare -a shdcon_ip
+declare -a shdcon_id
+declare -a cfgcon_ip
+declare -a cfgcon_id
+declare -a oscon_ip
+declare -a oscon_id
+declare -a str
 declare con_ips=""
 
 # 将接收到的参数使用ANSI颜色打印到控制台
@@ -15,48 +20,57 @@ aprint(){
 
 aprint "Docker Compose starting..."
 #docker-compose up -d
-
 #配置configsrv
 for c_id in $(docker-compose ps | sed -n '3,$p' | grep configsrv | sed -n '/Up/p' | awk '{print $1}'); do
-    con_id+=( "$c_id" )
+    cfgcon_id+=( "$c_id" )
     con_ips=`docker container inspect "$c_id" | grep -o -E '\"IPAddress": ".+"' | sed "s/\"//g" | sed "s/\://g" | awk '{print $2}'`
-    con_ip+=( "$con_ips" ) 
+    cfgcon_ip+=( "$con_ips" ) 
     if [[ "$c_id" =~ configsrv_.* ]]; then
-        echo "configuring $c_name $c_id ..."
+        echo "configuring  $c_id ..."
         if [[ "$i" -eq 1 ]]; then
-        	docker exec "${con_id[0]}" /init.sh ${con_ip[0]}
+        	docker exec "${cfgcon_id[0]}" /init.sh ${cfgcon_ip[0]}
 	else
-		docker exec "${con_id[0]}" /init_slave.sh ${con_ip[0]} $con_ips
+		docker exec "${cfgcon_id[0]}" /init_slave.sh ${cfgcon_ip[0]} $con_ips
 	fi
 	let i=i+1
     fi
-    sleep 1
+    sleep 10
  done
+
 
 #配置 sharesrv
-for c_id in ${container_id[@]}; do
- for c_name in ${service_name[*]}; do
-    if [[ "$c_name" = "mongodb" ]]; then
-        echo "configuring $c_name $c_id ..."
-        docker exec "$c_id" /init.sh 
-        break
+i=1
+for c_id in $(docker-compose ps | sed -n '3,$p' | grep shdmongodb | sed -n '/Up/p' | awk '{print $1}'); do
+    shdcon_id+=( "$c_id" )
+    con_ips=`docker container inspect "$c_id" | grep -o -E '\"IPAddress": ".+"' | sed "s/\"//g" | sed "s/\://g" | awk '{print $2}'`
+    shdcon_ip+=( "$con_ips" )
+    if [[ "$c_id" =~ shdmongodb_.* ]]; then
+        echo "configuring $c_id ..."
+        if [[ "$i" -eq 1 ]]; then
+                docker exec "${shdcon_id[0]}" /init.sh ${shdcon_ip[0]}
+        else
+                docker exec "${shdcon_id[0]}" /init_slave.sh ${shdcon_ip[0]} $con_ips
+        fi
+        let i=i+1
     fi
+    sleep 5
  done
-done
 
 #配置mongoos
-for c_id in ${container_id[@]}; do
- for c_name in ${service_name[*]}; do
-    if [[ "$c_name" = "mongoos" ]]; then
-        echo "configuring $c_name $c_id ..."
-        docker exec "$c_id" /init.sh
-        break
-    fi
- done
+i=1
+for c_id in $(docker-compose ps | sed -n '3,$p' | grep mongoos | sed -n '/Up/p' | awk '{print $1}'); do
+	let i=i+1
 done
-sleep 7
+docker-compose stop mongoos
+echo "configuring $c_id ..."
+for ip in ${cfgcon_ip[@]} ; do
+	str+=( "$ip:27107" )
 
-#aprint "Initializing MHA configuration..."
-#docker-compose exec manager /preparation/bootstrap.sh ${service_name[*]}
+        sed -i "/s/configsrv/${str[@]}/g" ./mongoos/conf.d/mongo.conf
+done
+docker-compose start mongoos 
+ 
+sleep 2
+
 
 aprint "Done!"

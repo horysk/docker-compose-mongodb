@@ -1,6 +1,6 @@
 version: "3"
 services:
-  mongodb:
+  shdmongodb:
     build: ./mongodb
     image: robin/mongod:master
 #    deploy:
@@ -15,7 +15,7 @@ services:
 #    deploy:
 #      replicas: 3
     volumes:
-      - "./mongodb/conf.d:/usr/local/mongo/conf"
+      - "./configsrv/conf.d:/usr/local/mongo/conf"
     environment:
       - mongorole=configsrv
   mongoos:
@@ -24,7 +24,7 @@ services:
 #    deploy:
 #      replicas: 1
     volumes:
-      - "./mongodb/conf.d:/usr/local/mongo/conf"
+      - "./mongoos/conf.d:/usr/local/mongo/conf"
     environment:
        - mongorole=mongoos
     
