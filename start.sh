@@ -85,7 +85,7 @@ for c_id in $(docker-compose ps | sed -n '3,$p' | grep mongoos | sed -n '/Up/p' 
     oscon_ip+=( "$con_ips" )
     if [[ "$c_id" =~ mongoos_.* ]]; then
         echo "configuring $c_id ..."
-        docker exec "${oscon_id[0]}" /init.sh $cfgstr
+        docker exec "$c_id" /init.sh "$cfgstr"
     fi
     sleep 2
  done
