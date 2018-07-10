@@ -28,17 +28,17 @@ for c_id in $(docker-compose ps | sed -n '3,$p' | grep configsrv | sed -n '/Up/p
     if [[ "$c_id" =~ configsrv_.* ]]; then
         echo "configuring  $c_id ..."
         if [[ "$i" -eq 1 ]]; then
-        	docker exec "${cfgcon_id[0]}" /init.sh ${cfgcon_ip[0]}
-	else
-		docker exec "${cfgcon_id[0]}" /init_slave.sh ${cfgcon_ip[0]} $con_ips
-	fi
-	let i=i+1
+                docker exec "${cfgcon_id[0]}" /init.sh ${cfgcon_ip[0]}
+        else
+                docker exec "${cfgcon_id[0]}" /init_slave.sh ${cfgcon_ip[0]} $con_ips
+        fi
+        let i=i+1
     fi
     sleep 2
  done
 
 
-#配置 sharesrv
+#配置 shdmongodb
 i=1
 for c_id in $(docker-compose ps | sed -n '3,$p' | grep shdmongodb | sed -n '/Up/p' | awk '{print $1}'); do
     shdcon_id+=( "$c_id" )
@@ -61,7 +61,7 @@ echo "configuring mongoos..."
 docker-compose stop mongoos
 
 for ip in ${cfgcon_ip[@]} ; do
-	cfgstr+="$ip:27107,"
+        cfgstr+="$ip:27107,"
 done
 cfgstr=`echo $cfgstr |sed 's/.$//'`
 echo $cfgstr
@@ -89,5 +89,18 @@ for c_id in $(docker-compose ps | sed -n '3,$p' | grep mongoos | sed -n '/Up/p' 
     fi
     sleep 2
  done
+
+#配置mongodb安全
+echo "configuring mongodb security..."
+docker exec "${shdcon_id[0]}" /init_pass.sh
+docker-compose stop shdmongodb
+sed -i "/^#security/d" ./mongodb/conf.d/mongo.conf
+sed -i "/^#  clusterAuthMode/d" ./mongodb/conf.d/mongo.conf
+sed -i "/^#  authorization/d" ./mongodb/conf.d/mongo.conf
+echo "security:" >>./mongodb/conf.d/mongo.conf
+echo "  clusterAuthMode: keyFile" >>./mongodb/conf.d/mongo.conf
+echo "  authorization: enabled" >>./mongodb/conf.d/mongo.conf
+docker-compose start shdmongodb
+
 
 aprint "Done!"
