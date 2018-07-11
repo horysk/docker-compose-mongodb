@@ -6,7 +6,7 @@ db.createUser(
 
     user: "clusterAdmin",
 
-    pwd: "feixun123",
+    pwd: "fex123",
 
 roles: [
 
