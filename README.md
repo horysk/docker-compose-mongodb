@@ -12,4 +12,6 @@ docker-compose up --scale configsrv=3
 4）通过start.sh配置mongos路由;
 5）可通过docker-compose scale configsrv=3,弹性config,mongos伸缩；
 6）弹性伸缩shard，后续会完善....
+7）关闭集群bash shutdown.sh
+8）重置集群bash reset.sh
 可先手动处理或修改docker-compose.yml文件，增加一个分片副本集。
