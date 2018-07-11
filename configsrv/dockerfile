@@ -22,13 +22,16 @@ RUN mkdir -p /usr/local/mongo/conf \
 ADD ./conf.d/mongo.conf /usr/local/mongo/conf/mongo.conf
 ADD ./prepairation/init.sh /init.sh
 ADD ./prepairation/init_slave.sh /init_slave.sh
+ADD ./conf.d/mongo.key /usr/local/mongo/conf/mongo.key
+ADD ./prepairation/init_pass.sh /init_pass.sh
 
 # Crteate the MongoDB user
 RUN useradd -u800 mongod \
 && echo mongod:123456 | chpasswd \
 && chown -R mongod.mongod /usr/local/mongo \
 && chown mongod.mongod /usr/bin/mongod /usr/bin/mongos \
-&& chmod a+x /init.sh /init_slave.sh
+&& chmod a+x /init.sh /init_slave.sh /init_pass.sh  \
+&& chmod 600 /usr/local/mongo/conf/mongo.key
 
 EXPOSE 27107
 USER mongod

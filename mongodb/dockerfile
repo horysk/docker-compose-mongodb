@@ -32,6 +32,7 @@ RUN useradd -u800 mongod \
 && chown mongod.mongod /usr/bin/mongod /usr/bin/mongos \
 && chmod a+x /init.sh /init_slave.sh /init_pass.sh \
 && chmod 600 /usr/local/mongo/conf/mongo.key
+
 EXPOSE 27107
 USER mongod
 

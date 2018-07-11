@@ -4,11 +4,13 @@ db.createUser(
 
   {
 
-    user: "shdAdmin",
+    user: "clusterAdmin",
 
-    pwd: "feixun456",
+    pwd: "feixun123",
 
 roles: [
+
+      { role: "root", db: "admin" },
 
       { role: "clusterAdmin", db: "admin" },
 

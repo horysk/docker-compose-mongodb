@@ -91,16 +91,35 @@ for c_id in $(docker-compose ps | sed -n '3,$p' | grep mongoos | sed -n '/Up/p' 
  done
 
 #配置mongodb安全
-echo "configuring mongodb security..."
+echo "configuring mongo security..."
+#集群管理员
+docker exec "${cfgcon_id[0]}" /init_pass.sh
+#分片管理员
 docker exec "${shdcon_id[0]}" /init_pass.sh
 docker-compose stop shdmongodb
 sed -i "/^#security/d" ./mongodb/conf.d/mongo.conf
-sed -i "/^#  clusterAuthMode/d" ./mongodb/conf.d/mongo.conf
+sed -i "/^#  keyFile/d" ./mongodb/conf.d/mongo.conf
 sed -i "/^#  authorization/d" ./mongodb/conf.d/mongo.conf
 echo "security:" >>./mongodb/conf.d/mongo.conf
-echo "  clusterAuthMode: keyFile" >>./mongodb/conf.d/mongo.conf
+echo "  keyFile: /usr/local/mongo/conf/mongo.key" >>./mongodb/conf.d/mongo.conf
 echo "  authorization: enabled" >>./mongodb/conf.d/mongo.conf
 docker-compose start shdmongodb
+#confsrv
+docker-compose stop configsrv
+sed -i "/^#security/d" ./configsrv/conf.d/mongo.conf
+sed -i "/^#  keyFile/d" ./configsrv/conf.d/mongo.conf
+sed -i "/^#  authorization/d" ./configsrv/conf.d/mongo.conf
+echo "security:" >>./configsrv/conf.d/mongo.conf
+echo "  keyFile: /usr/local/mongo/conf/mongo.key" >>./configsrv/conf.d/mongo.conf
+echo "  authorization: enabled" >>./configsrv/conf.d/mongo.conf
+docker-compose start configsrv
+#mongoos
+docker-compose stop mongoos
+sed -i "/^#security/d" ./mongoos/conf.d/mongo.conf
+sed -i "/^#  keyFile/d" ./mongoos/conf.d/mongo.conf
+echo "security:" >>./mongoos/conf.d/mongo.conf
+echo "  keyFile: /usr/local/mongo/conf/mongo.key" >>./mongoos/conf.d/mongo.conf
+docker-compose start mongoos
 
 
 aprint "Done!"

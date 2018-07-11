@@ -6,7 +6,7 @@ services:
 #    deploy:
 #      replicas: 3
     volumes:
-      - "./mongodb/conf.d:/usr/local/mongo/conf"
+      - "./mongodb/conf.d/mongo.conf:/usr/local/mongo/conf/mongo.conf"
     environment:
       - mongorole=shardsvr
   configsrv: 
@@ -15,7 +15,7 @@ services:
 #    deploy:
 #      replicas: 3
     volumes:
-      - "./configsrv/conf.d:/usr/local/mongo/conf"
+      - "./configsrv/conf.d/mongo.conf:/usr/local/mongo/conf/mongo.conf"
     environment:
       - mongorole=configsrv
   mongoos:
@@ -24,8 +24,10 @@ services:
 #    deploy:
 #      replicas: 1
     volumes:
-      - "./mongoos/conf.d:/usr/local/mongo/conf"
+      - "./mongoos/conf.d/mongo.conf:/usr/local/mongo/conf/mongo.conf"
     environment:
        - mongorole=mongoos
+    ports:
+       - "27107:27107"
     
 
