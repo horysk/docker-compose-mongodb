@@ -66,7 +66,7 @@ done
 cfgstr=`echo $cfgstr |sed 's/.$//'`
 echo $cfgstr
 sed -i "/^  configDB/d" ./mongoos/conf.d/mongo.conf
-echo "  configDB: config/$cfgstr" >>./mongoos/conf.d/mongo.conf
+sed -i "11i \  configDB: config/$cfgstr" ./mongoos/conf.d/mongo.conf
 #sed -i "s#^  configDB#  configDB: config/$cfgstr#" ./mongoos/conf.d/mongo.conf
 docker-compose start mongoos 
  
