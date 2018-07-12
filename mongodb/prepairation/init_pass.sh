@@ -6,7 +6,7 @@ db.createUser(
 
     user: "shdAdmin",
 
-    pwd: "feixun456",
+    pwd: "fex456",
 
 roles: [
 
